@@ -13,6 +13,9 @@ public class MoreButton : MonoBehaviour
     [Header("Animation")]
     [SerializeField] private float fadeDuration = 0.25f;
 
+    [Header("Audio")]
+    [SerializeField] private AudioSource sfxbutton;
+
     private Coroutine fadeCoroutine;
     private bool isOpen;
 
@@ -79,6 +82,8 @@ public class MoreButton : MonoBehaviour
             return;
 
         isOpen = true;
+
+        sfxbutton?.Play();
 
         if (panel != null)
             panel.SetActive(true);
