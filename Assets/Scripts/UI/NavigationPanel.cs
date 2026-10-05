@@ -3,12 +3,12 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
-public class MoreButton : MonoBehaviour
+public class NavigationPanel : MonoBehaviour
 {
-    [Header("Panel")]
-    [SerializeField] private GameObject panel;
-    [SerializeField] private CanvasGroup panelCanvasGroup;
-    [SerializeField] private RectTransform panelRect;
+    [Header("More Panel")]
+    [SerializeField] private GameObject morePanel;
+    [SerializeField] private CanvasGroup morePanelCanvasGroup;
+    [SerializeField] private RectTransform morePanelRect;
 
     [Header("Animation")]
     [SerializeField] private float fadeDuration = 0.25f;
@@ -17,28 +17,41 @@ public class MoreButton : MonoBehaviour
     [SerializeField] private AudioSource sfxbutton;
 
     private Coroutine fadeCoroutine;
-    private bool isOpen;
+    private bool isOpenMorePanel;
 
     private void Start()
     {
-        isOpen = false;
+        //More button
+        isOpenMorePanel = false;
 
-        if (panelCanvasGroup != null)
+        if (morePanelCanvasGroup != null)
         {
-            panelCanvasGroup.alpha = 0f;
-            panelCanvasGroup.interactable = false;
-            panelCanvasGroup.blocksRaycasts = false;
+            morePanelCanvasGroup.alpha = 0f;
+            morePanelCanvasGroup.interactable = false;
+            morePanelCanvasGroup.blocksRaycasts = false;
         }
 
-        if (panel != null)
-            panel.SetActive(false);
+        if (morePanel != null)
+            morePanel.SetActive(false);
+
+        //Home button
+
+
+        //AI button
     }
 
     private void Update()
     {
-        if (!isOpen)
+        if (!isOpenMorePanel)
             return;
 
+        CheckIfClickOutsideMore();
+    }
+
+    //==============MORE BUTTON==============
+
+    private void CheckIfClickOutsideMore()
+    {
         // Новый Input System
         if (Touchscreen.current != null &&
             Touchscreen.current.primaryTouch.press.wasPressedThisFrame)
@@ -46,7 +59,7 @@ public class MoreButton : MonoBehaviour
             Vector2 touchPosition =
                 Touchscreen.current.primaryTouch.position.ReadValue();
 
-            CheckOutsidePanel(touchPosition);
+            CheckOutsidePanelMore(touchPosition);
         }
 
         // Мышь для тестирования в Unity Editor
@@ -56,16 +69,15 @@ public class MoreButton : MonoBehaviour
             Vector2 mousePosition =
                 Mouse.current.position.ReadValue();
 
-            CheckOutsidePanel(mousePosition);
+            CheckOutsidePanelMore(mousePosition);
         }
     }
-
-    private void CheckOutsidePanel(Vector2 screenPosition)
+    private void CheckOutsidePanelMore(Vector2 screenPosition)
     {
         // Если нажали непосредственно внутри панели
-        if (panelRect != null &&
+        if (morePanelRect != null &&
             RectTransformUtility.RectangleContainsScreenPoint(
-                panelRect,
+                morePanelRect,
                 screenPosition,
                 null))
         {
@@ -75,49 +87,46 @@ public class MoreButton : MonoBehaviour
         // Нажали вне панели → закрываем
         CloseMorePanel();
     }
-
     public void OpenMorePanel()
     {
-        if (isOpen)
+        if (isOpenMorePanel)
             return;
 
-        isOpen = true;
+        isOpenMorePanel = true;
 
         sfxbutton?.Play();
 
-        if (panel != null)
-            panel.SetActive(true);
+        if (morePanel != null)
+            morePanel.SetActive(true);
 
         if (fadeCoroutine != null)
             StopCoroutine(fadeCoroutine);
 
         fadeCoroutine = StartCoroutine(
-            FadePanel(0f, 1f)
+            FadeMorePanel(0f, 1f)
         );
     }
-
     public void CloseMorePanel()
     {
-        if (!isOpen)
+        if (!isOpenMorePanel)
             return;
 
-        isOpen = false;
+        isOpenMorePanel = false;
 
         if (fadeCoroutine != null)
             StopCoroutine(fadeCoroutine);
 
         fadeCoroutine = StartCoroutine(
-            FadePanel(1f, 0f)
+            FadeMorePanel(1f, 0f)
         );
     }
-
-    private IEnumerator FadePanel(float startAlpha, float targetAlpha)
+    private IEnumerator FadeMorePanel(float startAlpha, float targetAlpha)
     {
         float time = 0f;
 
         // Пока появляется — можно взаимодействовать
-        panelCanvasGroup.interactable = targetAlpha > 0f;
-        panelCanvasGroup.blocksRaycasts = targetAlpha > 0f;
+        morePanelCanvasGroup.interactable = targetAlpha > 0f;
+        morePanelCanvasGroup.blocksRaycasts = targetAlpha > 0f;
 
         while (time < fadeDuration)
         {
@@ -128,23 +137,25 @@ public class MoreButton : MonoBehaviour
             // Плавная анимация
             progress = Mathf.SmoothStep(0f, 1f, progress);
 
-            panelCanvasGroup.alpha =
+            morePanelCanvasGroup.alpha =
                 Mathf.Lerp(startAlpha, targetAlpha, progress);
 
             yield return null;
         }
 
-        panelCanvasGroup.alpha = targetAlpha;
+        morePanelCanvasGroup.alpha = targetAlpha;
 
         if (targetAlpha <= 0f)
         {
-            panelCanvasGroup.interactable = false;
-            panelCanvasGroup.blocksRaycasts = false;
+            morePanelCanvasGroup.interactable = false;
+            morePanelCanvasGroup.blocksRaycasts = false;
 
-            if (panel != null)
-                panel.SetActive(false);
+            if (morePanel != null)
+                morePanel.SetActive(false);
         }
 
         fadeCoroutine = null;
     }
+
+
 }
